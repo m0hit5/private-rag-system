@@ -12,7 +12,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
-    # Uncomment below if you have NVIDIA GPU
+    # Uncomment below if you have NVIDIA GPU and nvidia-container-toolkit installed
     # runtime: nvidia
     # deploy:
     #   resources:
@@ -61,20 +61,19 @@ services:
       # Vector DB settings
       - VECTOR_DB=chroma
       - CHROMA_ENDPOINT=http://chromadb:8000
-      # ChromaDB doesn't require a key by default - comment out if not needed
+      # ChromaDB doesn't require an API key by default – comment out if not needed
       # - CHROMA_API_HEADER=X-Api-Key
       # - CHROMA_API_KEY=sk-123abc
 
-      # Audio Model settings
+      # Audio / TTS settings
       - WHISPER_PROVIDER=local
-      
-      # TTS/STT Model settings
       - TTS_PROVIDER=native
 
-      # Password settings
+      # Password policy
       - PASSWORDMINCHAR=8
       - PASSWORDUPPERCASE=1
       - PASSWORDLOWERCASE=1
+
     volumes:
       - ./anythingllm/storage:/app/server/storage
       - ./anythingllm/documents:/app/collector/hotdir
