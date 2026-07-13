@@ -1,4 +1,4 @@
-# Local RAG System - Ollama + AnythingLLM + ChromaDB
+# Private RAG System – Ollama + AnythingLLM + ChromaDB
 
 A fully containerized, zero-configuration Retrieval-Augmented Generation (RAG) system that runs entirely offline with no API keys or external dependencies. Upload documents, ask questions, and receive AI-generated answers grounded in your own data.
 
@@ -87,8 +87,8 @@ Ensure your system meets the following requirements before proceeding:
 ### Step 1: Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd local-rag-llm-stack
+git clone https://github.com/m0hit5/private-rag-system.git
+cd private-rag-system
 ```
 
 ### Step 2: (Optional) Configure the LLM Model
@@ -110,7 +110,7 @@ Alternatively, you can pull models after the initial startup using the Docker ex
 Run the following command to build and start all containers:
 
 ```bash
-docker compose -f docker_compose.yml -p local-rag-llm up --build
+docker compose up --build
 ```
 
 **Note**: The first deployment will take several minutes as Docker pulls the required images and initializes the containers.
@@ -153,13 +153,13 @@ http://localhost:3001
 To gracefully stop all containers:
 
 ```bash
-docker compose -f docker_compose.yml -p local-rag-llm down
+docker compose down
 ```
 
 To completely remove all containers, volumes, and networks:
 
 ```bash
-docker compose -f docker_compose.yml -p local-rag-llm down -v
+docker compose down -v
 ```
 
 ## Model Customization
@@ -190,9 +190,9 @@ All data is persisted through Docker volumes. The following volumes are configur
 
 | Volume | Mount Path | Purpose |
 | :--- | :--- | :--- |
-| `ollama_data` | `/root/.ollama` | Stores downloaded models |
-| `anythingllm_storage` | `/app/storage` | Stores uploaded documents and workspace data |
-| `chromadb_data` | `/chroma/chroma` | Stores vector embeddings and indices |
+| `./ollama` | `/root/.ollama` | Stores downloaded models |
+| `.anythingllm/storage` | `/app/server/storage` | Stores uploaded documents and workspace data |
+| `./chroma_data` | `/data` | Stores vector embeddings and indices |
 
 These volumes ensure that models, documents, and embeddings survive container restarts and updates.
 
