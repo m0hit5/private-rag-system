@@ -1,0 +1,88 @@
+services:
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma_data:/data
+    networks:
+      - rag-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    # Uncomment below if you have NVIDIA GPU
+    # runtime: nvidia
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "
+      ollama serve & 
+      sleep 5 && 
+      ollama pull nomic-embed-text && 
+      ollama pull llama3.1 &
+      wait
+      "
+    networks:
+      - rag-network
+
+  anythingllm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anythingllm
+    ports:
+      - "3001:3001"
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      - DISABLE_TELEMETRY=true
+      - NODE_OPTIONS=--force-node-api-uncaught-exceptions-policy=true
+
+      # LLM settings
+      - LLM_PROVIDER=ollama
+      - OLLAMA_BASE_PATH=http://ollama:11434
+      - OLLAMA_MODEL_PREF=llama3.1
+      - OLLAMA_MODEL_TOKEN_LIMIT=4096
+
+      # Embedding settings
+      - EMBEDDING_ENGINE=ollama
+      - EMBEDDING_BASE_PATH=http://ollama:11434
+      - EMBEDDING_MODEL_PREF=nomic-embed-text:latest
+      - EMBEDDING_MODEL_MAX_CHUNK_LENGTH=8192
+
+      # Vector DB settings
+      - VECTOR_DB=chroma
+      - CHROMA_ENDPOINT=http://chromadb:8000
+      # ChromaDB doesn't require a key by default - comment out if not needed
+      # - CHROMA_API_HEADER=X-Api-Key
+      # - CHROMA_API_KEY=sk-123abc
+
+      # Audio Model settings
+      - WHISPER_PROVIDER=local
+      
+      # TTS/STT Model settings
+      - TTS_PROVIDER=native
+
+      # Password settings
+      - PASSWORDMINCHAR=8
+      - PASSWORDUPPERCASE=1
+      - PASSWORDLOWERCASE=1
+    volumes:
+      - ./anythingllm/storage:/app/server/storage
+      - ./anythingllm/documents:/app/collector/hotdir
+      - ./anythingllm/outputs:/app/collector/outputs
+    user: "${UID:-1000}:${GID:-1000}"
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
